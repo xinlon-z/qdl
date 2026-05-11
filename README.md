@@ -332,6 +332,42 @@ makes it possible to wire `qdl-ks` into a single udev rule that covers
 multiple device configurations (for example, an optional DDR training
 image that is only present on some setups).
 
+## Flash flat build to local storage (qdl-writer)
+
+`qdl-writer` writes a flat build directly to a local block device such as an
+SD card, without requiring an EDL device or Firehose programmer. It reads the
+same `rawprogram*.xml` and `patch*.xml` descriptors used by `qdl`, evaluating
+all `NUM_DISK_SECTORS` and `CRC32(...)` expressions against the actual device
+geometry at flash time.
+
+```bash
+qdl-writer rawprogram*.xml patch*.xml /dev/sdX
+```
+
+The last argument is the block device to write to. All preceding non-option
+arguments are treated as XML descriptor files; their type (`rawprogram` or
+`patch`) is detected automatically from the root element.
+
+### Options
+
+| Option | Description |
+|---|---|
+| `-d`, `--debug` | Print debug messages |
+| `-f`, `--allow-missing` | Skip image files that cannot be opened |
+| `-i DIR`, `--include=DIR` | Search `DIR` for image files |
+
+### Notes
+
+- The tool requires write access to the block device (typically `root` or
+  membership in the `disk` group).
+- If the kernel reports the device as read-only, clear the flag first:
+  `sudo blockdev --setrw /dev/sdX`
+- Only `physical_partition_number="0"` operations are executed; operations
+  targeting other physical partitions are skipped with an informational message.
+- A progress bar is shown for each program operation. After all writes a sync
+  phase drains the kernel write-back cache to the device, also with a progress
+  bar.
+
 ## Run tests
 
 To run the integration test suite for QDL, use the `meson` tool with `test`
