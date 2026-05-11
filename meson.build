@@ -83,6 +83,22 @@ qdl_ks_exe = executable('qdl-ks',
   install : true
 )
 
+# --- qdl-writer executable ---
+writer_sources = files(
+  'qdl-writer.c',
+  'patch.c',
+  'program.c',
+  'sparse.c',
+)
+
+qdl_writer_exe = executable('qdl-writer',
+  sources : writer_sources + [version_h],
+  link_with: shared_lib,
+  dependencies : [libxml_dep, libzip_dep, dependency('threads')],
+  include_directories : inc,
+  install : true
+)
+
 # -- tests ---
 test(
   'VIP table generation',
@@ -125,7 +141,8 @@ if help2man.found()
     foreach prog : [
       ['qdl', qdl_exe, 'Qualcomm Download'],
       ['qdl-ramdump', qdl_ramdump_exe, 'Qualcomm Download Ramdump'],
-      ['qdl-ks', qdl_ks_exe, 'Qualcomm KS']
+      ['qdl-ks', qdl_ks_exe, 'Qualcomm KS'],
+      ['qdl-writer', qdl_writer_exe, 'Qualcomm Download Writer']
     ]
       manpage_targets += custom_target(prog[0] + '.1',
         input: prog[1],
